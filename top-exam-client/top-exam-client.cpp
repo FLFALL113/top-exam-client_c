@@ -3,6 +3,9 @@
 #include <thread>
 #include <string>
 #include <nlohmann/json.hpp>
+#include <codecvt>
+#include <Windows.h>
+#include <locale>
 
 using json = nlohmann::json;
 using boost::asio::ip::tcp;
@@ -11,6 +14,7 @@ using namespace std;
 
 void write_to_server(tcp::socket& socket, const string& name) {
     try {
+        cout << "Введите ответ: ";
         string message;
         getline(cin, message);
 
@@ -24,7 +28,7 @@ void write_to_server(tcp::socket& socket, const string& name) {
 
         boost::asio::write(socket, boost::asio::buffer(str));
 
-        cout << "Отправлено ответ: " << message << endl;
+        cout << "Отправлен ответ: " << message << endl;
     }
     catch (const exception& e) {
         cerr << "Write error: " << e.what() << "\n";
@@ -44,6 +48,7 @@ void read_from_server(tcp::socket& socket) {
 
         while (true) {
             bool flag = false;
+
             size_t reply_length = socket.read_some(boost::asio::buffer(reply));
             string msg = string(reply, reply_length);
 
@@ -64,6 +69,9 @@ void read_from_server(tcp::socket& socket) {
 
 int main() {
     setlocale(LC_ALL, "ru");
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+
     try {
         boost::asio::io_context io_context;
 
@@ -77,8 +85,6 @@ int main() {
 
         read_from_server(socket);
 
-        // Ждём завершения потока чтения
-        //reader_thread.join();
     }
     catch (exception& e) {
         cerr << "Exception: " << e.what() << "\n";
